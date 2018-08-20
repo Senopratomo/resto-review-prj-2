@@ -1,6 +1,8 @@
 /**
  * Common database helper functions.
  */
+
+let dbPromise;
 class DBHelper {
 
   /**
@@ -11,21 +13,69 @@ class DBHelper {
     const port = 1337 // Change this to your server port
     return `http://localhost:${port}/restaurants`;
   }
+  /**
+   * Open a IDB Database
+   * **/
+  static openDatabase() {
+    return idb.open('resto' , 1  , function(upgradeDb) {
+      upgradeDb.createObjectStore('resto' ,{keyPath: 'id'});
+    });
+  }
+  /**
+   * Show cached restaurants stored in IDB
+   */
+  static getDataFromCache(){
+    dbPromise = DBHelper.openDatabase();
+    return dbPromise.then(function(db){
+    // For first time of the page loading, don't need to go to idb
+        if(!db) return;
+        var tx = db.transaction('resto');
+        var store = tx.objectStore('resto');
 
+        return store.getAll();
+    });
+  }
   /**
    * Fetch all restaurants.
    */
   static fetchRestaurants(callback) {
-    fetch(DBHelper.DATABASE_URL)
-        .then(response => response.json())
-        .then(function(jsonResponse) {
-          callback(null, jsonResponse);
-        })
-        .catch(function(error) {
-          const errorMessage = (`Request failed. Returned status of ${error}`);
-          callback(errorMessage, null);
-        });
+    DBHelper.getDataFromCache().then(function(data){
+        // if we have data from cache , serve the object from cache.
+        if(data.length > 0){
+          return callback(null , data);
+        }
+        // Populate the cache by fetching restaurants from the server.
+        fetch(DBHelper.DATABASE_URL)
+            .then(res => {
+              console.log('res fetched is: ', res);
+              return res.json()})
+            .then(data => {
+              dbPromise.then(function(db){
+                if(!db) return db;
+                console.log('data fetched is: ', data);
+                var tx = db.transaction('resto' , 'readwrite');
+                var store = tx.objectStore('resto');
+
+                data.forEach(restaurant => store.put(restaurant));
+
+                // limit the data for 20
+                store.openCursor(null , 'prev').then(function(cursor){
+                  return cursor.advance(20);
+                })
+                .then(function deleteRest(cursor){
+                  if(!cursor) return;
+                  cursor.delete();
+                  return cursor.continue().then(deleteRest);
+                });
+              });
+              return callback(null,data);
+            })
+            .catch(err => {
+              return callback(err , null)
+            });
+      });
   }
+
 
   /**
    * Fetch a restaurant by its ID.
