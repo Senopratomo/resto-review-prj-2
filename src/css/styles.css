@@ -480,7 +480,18 @@ nav h1 a {
   #restaurants-list li p {
     font-size: 0.8rem;
   }
-
+  .details-container {
+    flex-direction: column;
+  }
+  #restaurant-container {
+    width: 100%;
+    order: 2;
+  }
+  #map-container-restaurant {
+    width: 100%;
+    height: 70vh;
+    order: 1;
+  }
   #reviews-list li {
     /* 2 rows */
     width: 45%;
