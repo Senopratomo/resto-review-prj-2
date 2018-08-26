@@ -1,4 +1,4 @@
-const version = "0.0.1";
+const version = "0.0.2";
 const cacheName = `resto-review-${version}`;
 self.addEventListener('install', e => {
     const timeStamp = Date.now();
@@ -7,6 +7,16 @@ self.addEventListener('install', e => {
             return cache.addAll([
                 `/`,
                 `/index.html`,
+                `/restaurant.html?id=1`,
+                `/restaurant.html?id=2`,
+                `/restaurant.html?id=3`,
+                `/restaurant.html?id=4`,
+                `/restaurant.html?id=5`,
+                `/restaurant.html?id=6`,
+                `/restaurant.html?id=7`,
+                `/restaurant.html?id=8`,
+                `/restaurant.html?id=9`,
+                `/restaurant.html?id=10`,
                 `/css/styles.css`,
                 `/js/dbhelper.js`,
                 `/js/idb.js`,
@@ -22,6 +32,8 @@ self.addEventListener('install', e => {
                 `/img/8.jpg`,
                 `/img/9.jpg`,
                 `/img/10.jpg`,
+                `/img/favicon-32x32.png`,
+                `/img/favicon-32x32.png`,
                 `http://localhost:1337/restaurants/`,
                 `https://fonts.googleapis.com/css?family=Roboto:300,400,500,700`
 
